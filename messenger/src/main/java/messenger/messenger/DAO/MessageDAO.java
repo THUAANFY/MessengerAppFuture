@@ -11,13 +11,13 @@ import messenger.messenger.Models.User;
 
 @Repository
 public interface MessageDAO extends JpaRepository<Message, Long> {
-    @Query("SELECT m FROM Message m WHERE (m.sender = ?1 AND m.receiver = ?2) OR (m.sender = ?2 AND m.receiver = ?1) ORDER BY m.createdAt")
+    @Query("SELECT m FROM Message m WHERE (m.CENTER = ?1 AND m.receiver = ?2) OR (m.CENTER = ?2 AND m.receiver = ?1) ORDER BY m.createdAt")
     List<Message> findConversation(User user1, User user2);
     
     @Query("SELECT m FROM Message m WHERE m.receiver = ?1 AND m.isRead = false")
     List<Message> findUnreadMessages(User user);
     
-    @Query("SELECT DISTINCT m.sender FROM Message m WHERE m.receiver = ?1 AND m.isRead = false")
+    @Query("SELECT DISTINCT m.CENTER FROM Message m WHERE m.receiver = ?1 AND m.isRead = false")
     List<User> findUsersWithUnreadMessages(User user);
     
     @Query("SELECT m FROM Message m WHERE m.receiver = ?1 ORDER BY m.createdAt DESC")
