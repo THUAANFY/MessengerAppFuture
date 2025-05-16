@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TechChat - Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+</head>
+<body class="chat-body">
+    <!-- Particle Background (reduced opacity) -->
+    <div id="particles-js" class="particles-reduced"></div>
+
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+            <!-- User Profile -->
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff" alt="User Avatar">
+                    <span class="status-indicator online"></span>
+                </div>
+                <div class="user-info">
+                    <h6 class="user-name" th:text="${user != null ? user.fullName : 'John Doe'}">John Doe</h6>
+                    <p class="user-status">Online</p>
+                </div>
+                <div class="user-actions">
+                    <button class="action-btn" id="settingsBtn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="action-btn" title="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search conversations...">
+                </div>
+            </div>
+
+            <!-- Conversation Tabs -->
+            <div class="conversation-tabs">
+                <button class="tab-btn active" data-tab="chats">
+                    <i class="fas fa-comments"></i> Chats
+                </button>
+                <button class="tab-btn" data-tab="contacts">
+                    <i class="fas fa-user-friends"></i> Contacts
+                </button>
+                <button class="tab-btn" data-tab="groups">
+                    <i class="fas fa-users"></i> Groups
+                </button>
+            </div>
+
+            <!-- Conversation List -->
+            <div class="conversation-list">
+                <!-- Active conversation -->
+                <div class="conversation-item active">
+                    <div class="conversation-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                        <span class="status-indicator online"></span>
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">Jane Smith</div>
+                        <div class="conversation-last-message">Sure, let's meet tomorrow!</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">12:30 PM</div>
+                        <div class="conversation-unread">2</div>
+                    </div>
+                </div>
+
+                <!-- Other conversations -->
+                <div class="conversation-item">
+                    <div class="conversation-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Tech+Team&background=FF5722&color=fff" alt="Tech Team">
+                        <span class="status-indicator online"></span>
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">Tech Team</div>
+                        <div class="conversation-last-message">Alex: The new update is ready for testing</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">10:45 AM</div>
+                        <div class="conversation-unread">5</div>
+                    </div>
+                </div>
+
+                <div class="conversation-item">
+                    <div class="conversation-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=9C27B0&color=fff" alt="Mike Johnson">
+                        <span class="status-indicator away"></span>
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">Mike Johnson</div>
+                        <div class="conversation-last-message">I'll send you the documents later</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">Yesterday</div>
+                    </div>
+                </div>
+
+                <div class="conversation-item">
+                    <div class="conversation-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Sarah+Williams&background=2196F3&color=fff" alt="Sarah Williams">
+                        <span class="status-indicator offline"></span>
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">Sarah Williams</div>
+                        <div class="conversation-last-message">Thanks for your help!</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">Yesterday</div>
+                    </div>
+                </div>
+
+                <div class="conversation-item">
+                    <div class="conversation-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Project+Nexus&background=795548&color=fff" alt="Project Nexus">
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">Project Nexus</div>
+                        <div class="conversation-last-message">David: Meeting scheduled for Monday</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">Wed</div>
+                    </div>
+                </div>
+
+                <div class="conversation-item">
+                    <div class="conversation-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Lisa+Chen&background=E91E63&color=fff" alt="Lisa Chen">
+                        <span class="status-indicator online"></span>
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">Lisa Chen</div>
+                        <div class="conversation-last-message">Can you review my code?</div>
+                    </div>
+                    <div class="conversation-meta">
+                        <div class="conversation-time">Tue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Chat Button -->
+            <div class="new-chat-container">
+                <button class="new-chat-btn">
+                    <i class="fas fa-plus"></i> New Chat
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-header-user">
+                    <div class="conversation-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                        <span class="status-indicator online"></span>
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">Jane Smith</div>
+                        <div class="conversation-status">Online</div>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="action-btn" title="Voice Call">
+                        <i class="fas fa-phone-alt"></i>
+                    </button>
+                    <button class="action-btn" title="Video Call">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="action-btn" title="Search">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="action-btn" title="More Options">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages">
+                <div class="message-date-divider">
+                    <span>Today</span>
+                </div>
+
+                <!-- Received Messages -->
+                <div class="message-item received">
+                    <div class="message-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>Hi there! How are you doing today?</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:15 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-item received">
+                    <div class="message-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>I was wondering if you'd like to meet up for coffee tomorrow?</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:16 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sent Messages -->
+                <div class="message-item sent">
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>Hey Jane! I'm doing great, thanks for asking.</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:17 AM</span>
+                            <span class="message-status">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-item sent">
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>Coffee sounds perfect! What time were you thinking?</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:18 AM</span>
+                            <span class="message-status">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Received Messages -->
+                <div class="message-item received">
+                    <div class="message-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>How about 2 PM at the new café downtown?</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:20 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-item received">
+                    <div class="message-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>I heard they have amazing pastries!</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:20 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sent Messages -->
+                <div class="message-item sent">
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>2 PM works for me. I've been wanting to try that place!</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:22 AM</span>
+                            <span class="message-status">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-item sent">
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>Looking forward to it! 😊</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:22 AM</span>
+                            <span class="message-status">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Received Messages -->
+                <div class="message-item received">
+                    <div class="message-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>Great! See you tomorrow then!</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:25 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-item received">
+                    <div class="message-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>By the way, I finished the project we were working on. I'll bring my laptop to show you the results.</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:26 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sent Messages -->
+                <div class="message-item sent">
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>That's awesome! Can't wait to see what you've done with it.</p>
+                        </div>
+                        <div class="message-info">
+                            <span class="message-time">10:30 AM</span>
+                            <span class="message-status">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typing indicator -->
+                <div class="message-item received">
+                    <div class="message-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith">
+                    </div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input">
+                <button class="chat-input-btn" title="Emoji">
+                    <i class="far fa-smile"></i>
+                </button>
+                <button class="chat-input-btn" title="Attach File">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <div class="chat-input-field">
+                    <input type="text" placeholder="Type a message..." class="message-input">
+                </div>
+                <button class="chat-input-btn" title="Voice Message">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="chat-send-btn" title="Send Message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Info Sidebar (hidden by default) -->
+        <div class="info-sidebar">
+            <div class="info-header">
+                <h6>Contact Info</h6>
+                <button class="close-info-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="info-content">
+                <div class="info-profile">
+                    <div class="info-avatar">
+                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff&size=150" alt="Jane Smith">
+                    </div>
+                    <h5 class="info-name">Jane Smith</h5>
+                    <p class="info-status">Online</p>
+                </div>
+                
+                <div class="info-section">
+                    <h6 class="info-section-title">About</h6>
+                    <p class="info-about">Living life one code at a time ✨</p>
+                </div>
+                
+                <div class="info-section">
+                    <h6 class="info-section-title">Media, Links and Docs</h6>
+                    <div class="info-media-grid">
+                        <div class="info-media-item">
+                            <img src="https://via.placeholder.com/80" alt="Media">
+                        </div>
+                        <div class="info-media-item">
+                            <img src="https://via.placeholder.com/80" alt="Media">
+                        </div>
+                        <div class="info-media-item">
+                            <img src="https://via.placeholder.com/80" alt="Media">
+                        </div>
+                        <div class="info-media-item">
+                            <img src="https://via.placeholder.com/80" alt="Media">
+                        </div>
+                        <div class="info-media-item more">
+                            <span>32+</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-actions">
+                    <button class="info-action-btn">
+                        <i class="fas fa-bell-slash"></i>
+                        <span>Mute Notifications</span>
+                    </button>
+                    <button class="info-action-btn">
+                        <i class="fas fa-star"></i>
+                        <span>Starred Messages</span>
+                    </button>
+                    <button class="info-action-btn">
+                        <i class="fas fa-ban"></i>
+                        <span>Block Contact</span>
+                    </button>
+                    <button class="info-action-btn danger">
+                        <i class="fas fa-trash"></i>
+                        <span>Delete Chat</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content tech-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h6 class="settings-section-title">Profile</h6>
+                        <div class="settings-profile">
+                            <div class="settings-avatar">
+                                <img src="https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff&size=100" alt="User Avatar">
+                                <div class="avatar-change">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
+                            <div class="settings-profile-info">
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <input type="text" class="tech-input" value="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <input type="text" class="tech-input" value="Available">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h6 class="settings-section-title">Appearance</h6>
+                        <div class="settings-option">
+                            <span>Dark Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <span>Chat Background</span>
+                            <div class="bg-options">
+                                <div class="bg-option active" style="background-color: #0a192f;"></div>
+                                <div class="bg-option" style="background-color: #1a1a2e;"></div>
+                                <div class="bg-option" style="background-color: #16213e;"></div>
+                                <div class="bg-option" style="background-color: #222831;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h6 class="settings-section-title">Notifications</h6>
+                        <div class="settings-option">
+                            <span>Message Notifications</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <span>Sound</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h6 class="settings-section-title">Privacy</h6>
+                        <div class="settings-option">
+                            <span>Read Receipts</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <span>Last Seen</span>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="tech-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="tech-btn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <!-- Custom JS -->
+    <script th:src="@{/js/script.js}"></script>
+    <script th:src="@{/js/chat.js}"></script>
+</body>
+</html>

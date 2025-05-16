@@ -69,7 +69,7 @@
                                         <span class="tech-input-icon">
                                             <i class="fas fa-envelope"></i>
                                         </span>
-                                        <input class="tech-input" id="email" type="email" th:field="*{email}" placeholder="Email"/>
+                                        <input class="tech-input" id="email" type="text" th:field="*{email}" placeholder="Email"/>
                                     </div>
                                     <div class="error-message" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
                                 </div>
