@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TechChat - Edit Profile</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <style>
+        /* Cải tiến cho avatar upload */
+        .avatar-container {
+            position: relative;
+            margin: 0 auto 20px;
+            width: 150px;
+        }
+        
+        .avatar-wrapper {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            border: 3px solid rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-wrapper:hover {
+            border-color: rgba(0, 229, 255, 0.8);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            transform: scale(1.02);
+        }
+        
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+        }
+        
+        .avatar-wrapper:hover .avatar-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 1;
+        }
+        
+        .avatar-edit {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 229, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-wrapper:hover .avatar-edit {
+            transform: scale(1);
+        }
+        
+        .avatar-hint {
+            width: 200px;
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        /* Upload indicator */
+        .upload-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .upload-progress.active {
+            opacity: 1;
+        }
+        
+        .upload-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00e5ff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Drag and drop styling */
+        .avatar-wrapper.drag-highlight {
+            border: 3px dashed #00e5ff;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
+            transform: scale(1.05);
+        }
+        
+        /* File upload status */
+        .file-status {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+            color: #6c757d;
+            height: 20px;
+        }
+        
+        .file-status.success {
+            color: #4caf50;
+            width: 300px;
+        }
+        
+        .file-status.error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="profile-container animate__animated animate__fadeIn">
+                    <!-- Edit Profile Card -->
+                    <div class="profile-card glass-card mb-4">
+                        <div class="card-header">
+                            <h2><i class="fas fa-user-edit me-2"></i>Edit Profile</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="avatar-container">
+                                <div class="avatar-wrapper" id="avatarDropzone">
+                                    <img th:src="${user.profilePicture != null ? user.profilePicture : 'https://ui-avatars.com/api/?name=' + user.fullName + '&background=0D8ABC&color=fff&size=200'}" 
+                                        alt="User Avatar" class="profile-avatar" id="avatarPreview">
+                                    <div class="avatar-overlay">
+                                        <label for="profileImageInput" class="avatar-edit">
+                                            <i class="fas fa-camera"></i>
+                                        </label>
+                                    </div>
+                                    <div class="upload-progress" id="uploadProgress">
+                                        <div class="upload-spinner"></div>
+                                        <div class="text-white mt-2">Uploading...</div>
+                                    </div>
+                                </div>
+                                <div class="avatar-hint">Click to change profile picture</div>
+                                <div class="file-status" id="fileStatus"></div>
+                            </div>
+                            
+                            <form th:action="@{/profile/update}" method="post" enctype="multipart/form-data" class="profile-form" id="profileUpdateForm">
+                                <!-- Hidden file input for profile image -->
+                                <input type="file" id="profileImageInput" name="profileImage" accept="image/*" style="display: none;">
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="username">Username</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-user input-icon"></i>
+                                            <input type="text" id="username" th:value="${user.username}" disabled class="form-control">
+                                        </div>
+                                        <small>Username cannot be changed</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="fullName">Full Name</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-id-card input-icon"></i>
+                                            <input type="text" id="fullName" name="fullName" th:value="${user.fullName}" required class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-envelope input-icon"></i>
+                                            <input type="email" id="email" name="email" th:value="${user.email}" required class="form-control">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="status">Status</label>
+                                        <div class="input-container">
+                                            <i class="fas fa-signal input-icon"></i>
+                                            <select id="status" name="status" class="form-select">
+                                                <option value="ONLINE" th:selected="${user.status != null && user.status.name() == 'ONLINE'}">Online</option>
+                                                <option value="BUSY" th:selected="${user.status != null && user.status.name() == 'BUSY'}">Busy</option>
+                                                <option value="OFFLINE" th:selected="${user.status != null && user.status.name() == 'OFFLINE'}">Offline</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="bio">Bio</label>
+                                    <div class="input-container textarea-container">
+                                        <i class="fas fa-info-circle input-icon"></i>
+                                        <textarea id="bio" name="bio" rows="4" th:text="${user.bio}" class="form-control"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <a th:href="@{/profile}" class="btn btn-back">
+                                        <i class="fas fa-arrow-left"></i> Back
+                                    </a>
+                                    <button type="submit" class="btn btn-save" id="saveButton">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Change Password Card -->
+                    <div class="profile-card glass-card animate__animated animate__fadeIn animate__delay-1s">
+                        <div class="card-header">
+                            <h2><i class="fas fa-key me-2"></i>Change Password</h2>
+                        </div>
+                        <div class="card-body">
+                            <!-- Alert for server-side validation errors -->
+                            <div th:if="${error}" class="alert alert-danger animate__animated animate__fadeIn" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <span th:text="${error}"></span>
+                            </div>
+                            
+                            <!-- Alert for success message -->
+                            <div th:if="${success}" class="alert alert-success animate__animated animate__fadeIn" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span th:text="${success}"></span>
+                            </div>
+                            
+                            <form id="passwordForm" th:action="@{/profile/change-password}" method="post" class="password-form">
+                                <div class="form-group">
+                                    <label for="currentPassword">Current Password</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <input type="password" id="currentPassword" name="currentPassword" required class="form-control">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('currentPassword')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback" id="currentPassword-error"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="newPassword">New Password</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-key input-icon"></i>
+                                        <input type="password" id="newPassword" name="newPassword" required class="form-control">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('newPassword')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="password-strength-container">
+                                        <div class="password-strength-bar" id="password-strength"></div>
+                                    </div>
+                                    <div class="password-requirements">
+                                        <p>Password must:</p>
+                                        <ul class="requirements-list">
+                                            <li id="length-check"><i class="fas fa-circle"></i> Be at least 8 characters long</li>
+                                            <li id="letter-check"><i class="fas fa-circle"></i> Contain at least one letter</li>
+                                            <li id="number-check"><i class="fas fa-circle"></i> Contain at least one number</li>
+                                            <li id="special-check"><i class="fas fa-circle"></i> Contain at least one special character</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm New Password</label>
+                                    <div class="input-container">
+                                        <i class="fas fa-check-double input-icon"></i>
+                                        <input type="password" id="confirmPassword" name="confirmPassword" required class="form-control">
+                                        <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback" id="confirmPassword-error"></div>
+                                </div>
+                                
+                                <div class="form-actions right-aligned">
+                                    <button type="submit" id="changePasswordBtn" class="btn btn-save">
+                                        <i class="fas fa-key"></i> Change Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <!-- Custom JS -->
+    <script th:src="@{/js/profile.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const profileImageInput = document.getElementById('profileImageInput');
+            const avatarPreview = document.getElementById('avatarPreview');
+            const avatarDropzone = document.getElementById('avatarDropzone');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const fileStatus = document.getElementById('fileStatus');
+            const profileForm = document.getElementById('profileUpdateForm');
+            const saveButton = document.getElementById('saveButton');
+            
+            // Handle file selection
+            profileImageInput.addEventListener('change', function() {
+                handleFileSelect(this.files[0]);
+            });
+            
+            // Function to handle file selection
+            function handleFileSelect(file) {
+                if (!file) return;
+                
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    showFileStatus('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.', 'error');
+                    return;
+                }
+                
+                // Validate file size (5MB max)
+                const maxSize = 10 * 1024 * 1024; // 5MB in bytes
+                if (file.size > maxSize) {
+                    showFileStatus('File size exceeds 5MB. Please choose a smaller image.', 'error');
+                    return;
+                }
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                    showFileStatus('Image selected: ' + file.name, 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Show file status message
+            function showFileStatus(message, type = '') {
+                fileStatus.textContent = message;
+                fileStatus.className = 'file-status';
+                if (type) {
+                    fileStatus.classList.add(type);
+                }
+                
+                // Clear message after 5 seconds
+                setTimeout(() => {
+                    fileStatus.textContent = '';
+                    fileStatus.className = 'file-status';
+                }, 5000);
+            }
+            
+            // Setup drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                avatarDropzone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Highlight drop area
+            ['dragenter', 'dragover'].forEach(eventName => {
+                avatarDropzone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                avatarDropzone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                avatarDropzone.classList.add('drag-highlight');
+            }
+            
+            function unhighlight() {
+                avatarDropzone.classList.remove('drag-highlight');
+            }
+            
+            // Handle dropped files
+            avatarDropzone.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                
+                if (file) {
+                    profileImageInput.files = dt.files;
+                    handleFileSelect(file);
+                }
+            }
+            
+            // Click on avatar to trigger file input
+            avatarDropzone.addEventListener('click', function(e) {
+                // Don't trigger if clicking on the overlay or edit button
+                if (e.target === this || e.target === avatarPreview) {
+                    profileImageInput.click();
+                }
+            });
+            
+            // Form submission
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    // Show loading state
+                    saveButton.disabled = true;
+                    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                    
+                    // Log form data for debugging
+                    console.log("Form is being submitted");
+                    if (profileImageInput.files.length > 0) {
+                        console.log("File being submitted:", profileImageInput.files[0].name, "Size:", profileImageInput.files[0].size);
+                    } else {
+                        console.log("No file being submitted");
+                    }
+                });
+            }
+            
+            // Toggle password visibility
+            window.togglePassword = function(inputId) {
+                const input = document.getElementById(inputId);
+                const icon = event.currentTarget.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            };
+            
+            // Enhanced password validation
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const currentPassword = document.getElementById('currentPassword');
+            const passwordForm = document.getElementById('passwordForm');
+            const changePasswordBtn = document.getElementById('changePasswordBtn');
+            
+            // Password requirement checks
+            const lengthCheck = document.getElementById('length-check');
+            const letterCheck = document.getElementById('letter-check');
+            const numberCheck = document.getElementById('number-check');
+            const specialCheck = document.getElementById('special-check');
+            
+            // Function to validate password
+            function validatePassword() {
+                if (!newPassword) return 0;
+                
+                const password = newPassword.value;
+                let strength = 0;
+                
+                // Check length
+                if (password.length >= 8) {
+                    strength += 1;
+                    lengthCheck.classList.add('valid');
+                    lengthCheck.querySelector('i').className = 'fas fa-check-circle';
+                } else {
+                    lengthCheck.classList.remove('valid');
+                    lengthCheck.querySelector('i').className = 'fas fa-circle';
+                }
+                
+                // Check for letters
+                if (password.match(/[a-zA-Z]+/)) {
+                    strength += 1;
+                    letterCheck.classList.add('valid');
+                    letterCheck.querySelector('i').className = 'fas fa-check-circle';
+                } else {
+                    letterCheck.classList.remove('valid');
+                    letterCheck.querySelector('i').className = 'fas fa-circle';
+                }
+                
+                // Check for numbers
+                if (password.match(/[0-9]+/)) {
+                    strength += 1;
+                    numberCheck.classList.add('valid');
+                    numberCheck.querySelector('i').className = 'fas fa-check-circle';
+                } else {
+                    numberCheck.classList.remove('valid');
+                    numberCheck.querySelector('i').className = 'fas fa-circle';
+                }
+                
+                // Check for special characters
+                if (password.match(/[^a-zA-Z0-9]+/)) {
+                    strength += 1;
+                    specialCheck.classList.add('valid');
+                    specialCheck.querySelector('i').className = 'fas fa-check-circle';
+                } else {
+                    specialCheck.classList.remove('valid');
+                    specialCheck.querySelector('i').className = 'fas fa-circle';
+                }
+                
+                // Update strength bar
+                const strengthBar = document.getElementById('password-strength');
+                if (strengthBar) {
+                    switch(strength) {
+                        case 0:
+                            strengthBar.style.width = '0%';
+                            strengthBar.style.backgroundColor = 'transparent';
+                            break;
+                        case 1:
+                            strengthBar.style.width = '25%';
+                            strengthBar.style.backgroundColor = '#f44336';
+                            break;
+                        case 2:
+                            strengthBar.style.width = '50%';
+                            strengthBar.style.backgroundColor = '#ff9800';
+                            break;
+                        case 3:
+                            strengthBar.style.width = '75%';
+                            strengthBar.style.backgroundColor = '#ffeb3b';
+                            break;
+                        case 4:
+                            strengthBar.style.width = '100%';
+                            strengthBar.style.backgroundColor = '#00e676';
+                            break;
+                    }
+                }
+                
+                return strength;
+            }
+            
+            // Function to check if passwords match
+            function checkPasswordsMatch() {
+                if (!confirmPassword || !newPassword) return true;
+                
+                const confirmPasswordError = document.getElementById('confirmPassword-error');
+                
+                if (confirmPassword.value && newPassword.value !== confirmPassword.value) {
+                    confirmPassword.classList.add('is-invalid');
+                    if (confirmPasswordError) {
+                        confirmPasswordError.textContent = 'Passwords do not match';
+                        confirmPasswordError.style.display = 'block';
+                    }
+                    return false;
+                } else {
+                    confirmPassword.classList.remove('is-invalid');
+                    if (confirmPasswordError) {
+                        confirmPasswordError.textContent = '';
+                        confirmPasswordError.style.display = 'none';
+                    }
+                    return true;
+                }
+            }
+            
+            // Add event listeners
+            if (newPassword) {
+                newPassword.addEventListener('input', validatePassword);
+                newPassword.addEventListener('input', checkPasswordsMatch);
+            }
+            
+            if (confirmPassword) {
+                confirmPassword.addEventListener('input', checkPasswordsMatch);
+            }
+            
+            // Form submission validation
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    
+                    // Validate current password
+                    if (currentPassword && !currentPassword.value) {
+                        currentPassword.classList.add('is-invalid');
+                        const currentPasswordError = document.getElementById('currentPassword-error');
+                        if (currentPasswordError) {
+                            currentPasswordError.textContent = 'Current password is required';
+                            currentPasswordError.style.display = 'block';
+                        }
+                        isValid = false;
+                    } else if (currentPassword) {
+                        currentPassword.classList.remove('is-invalid');
+                        const currentPasswordError = document.getElementById('currentPassword-error');
+                        if (currentPasswordError) {
+                            currentPasswordError.textContent = '';
+                            currentPasswordError.style.display = 'none';
+                        }
+                    }
+                    
+                    // Validate new password strength
+                    const passwordStrength = validatePassword();
+                    if (newPassword && passwordStrength < 4) {
+                        newPassword.classList.add('is-invalid');
+                        isValid = false;
+                        
+                        // Add shake animation to password requirements
+                        const requirements = document.querySelector('.password-requirements');
+                        if (requirements) {
+                            requirements.classList.add('animate__animated', 'animate__shakeX');
+                            setTimeout(() => {
+                                requirements.classList.remove('animate__animated', 'animate__shakeX');
+                            }, 1000);
+                        }
+                    } else if (newPassword) {
+                        newPassword.classList.remove('is-invalid');
+                    }
+                    
+                    // Check if passwords match
+                    if (!checkPasswordsMatch()) {
+                        isValid = false;
+                        
+                        // Add shake animation
+                        if (confirmPassword && confirmPassword.parentNode) {
+                            confirmPassword.parentNode.classList.add('animate__animated', 'animate__shakeX');
+                            setTimeout(() => {
+                                confirmPassword.parentNode.classList.remove('animate__animated', 'animate__shakeX');
+                            }, 1000);
+                        }
+                    }
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        
+                        // Scroll to the first error
+                        const firstError = document.querySelector('.is-invalid');
+                        if (firstError) {
+                            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstError.focus();
+                        }
+                    } else if (changePasswordBtn) {
+                        // Show loading state
+                        changePasswordBtn.classList.add('btn-loading');
+                        changePasswordBtn.disabled = true;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 package messenger.messenger.Services;
 
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import messenger.messenger.DAO.UserDAO;
@@ -9,11 +8,8 @@ import messenger.messenger.Models.User;
 
 @Service
 public class UserService {
-    private final UserDAO userDAO;
-    
-    public UserService(UserDAO userDAO) {
-        this.userDAO = userDAO;
-    }
+    @Autowired
+    private UserDAO userDAO;
     
     public User getUserById(Long id) {
         return userDAO.findById(id).orElse(null);
@@ -23,11 +19,22 @@ public class UserService {
         return userDAO.findByUsername(username);
     }
     
-    public List<User> searchUsers(String keyword) {
-        return userDAO.searchUsers(keyword);
+    public User getUserByEmail(String email) {
+        return userDAO.findByEmail(email);
     }
     
-    public List<User> getAllUsers() {
-        return userDAO.findAll();
+    public void updateUser(User user) {
+        userDAO.save(user);
+    }
+    
+    public boolean checkPassword(User user, String rawPassword) {
+        // Kiểm tra mật khẩu không mã hóa
+        return user.getPassword().equals(rawPassword);
+    }
+    
+    public void updatePassword(User user, String newPassword) {
+        // Cập nhật mật khẩu không mã hóa
+        user.setPassword(newPassword);
+        userDAO.save(user);
     }
 }

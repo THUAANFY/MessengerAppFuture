@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TechChat - Profile</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Custom CSS -->
+    <!-- <link rel="stylesheet" th:href="@{/css/styles.css}"> -->
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <style>
+        /* Cải tiến cho profile avatar */
+        .profile-avatar-container {
+            position: relative;
+            right: 50%;
+            width: 120px;
+            height: 120px;
+            /* margin: 0 auto; */
+            margin-top: -100px;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-header {
+            position: relative;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid rgba(0, 229, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            background-color: #1d2d50;
+        }
+        
+        .profile-avatar-container:hover .profile-avatar {
+            transform: scale(1.05);
+            border-color: rgba(0, 229, 255, 0.8);
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+        }
+        
+        .status-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid #112240;
+            z-index: 11;
+            transition: all 0.3s ease;
+        }
+        
+        .status-badge.online {
+            background-color: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+        }
+        
+        .status-badge.busy {
+            background-color: #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.7);
+        }
+        
+        .status-badge.offline {
+            background-color: #9e9e9e;
+            box-shadow: 0 0 10px rgba(158, 158, 158, 0.7);
+        }
+        
+        /* Cải tiến cho profile cover */
+        .profile-cover-img {
+            height: 150px;
+            background: linear-gradient(135deg, #112240, #1d2d50);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-cover-img::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 229, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 188, 212, 0.1) 0%, transparent 50%);
+            z-index: 1;
+        }
+        
+        .profile-cover-img::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to top, rgba(17, 34, 64, 1), transparent);
+            z-index: 2;
+        }
+        
+        /* Hiệu ứng pulse cho status badge */
+        @keyframes pulse-animation {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+        
+        .status-badge.online {
+            animation: pulse-animation 2s infinite;
+        }
+        
+        /* Hiệu ứng avatar frame */
+        .avatar-frame {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            border: 2px dashed rgba(0, 229, 255, 0.3);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Nút chỉnh sửa avatar */
+        .avatar-edit-btn {
+            position: absolute;
+            bottom: 0;
+            right: -10px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #00bcd4, #00e5ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a192f;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.8);
+            z-index: 12;
+        }
+        
+        .profile-avatar-container:hover .avatar-edit-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .avatar-edit-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 229, 255, 0.4);
+        }
+        
+        /* Hiệu ứng ánh sáng cho avatar */
+        .avatar-glare {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .profile-avatar-container:hover .avatar-glare {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="profile-body">
+    <!-- Particle Background (reduced opacity) -->
+    <div id="particles-js" class="particles-reduced"></div>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card profile-card glass-card mb-4 animate__animated animate__fadeIn">
+                    <div class="card-body text-center">
+                        <div class="profile-header">
+                            <div class="profile-cover-img">
+                                <!-- Thêm pattern overlay cho cover -->
+                                <div class="cover-pattern"></div>
+                            </div>
+                            <div class="profile-avatar-container">
+                                <!-- Thêm frame xoay cho avatar -->
+                                <div class="avatar-frame"></div>
+                                
+                                <img th:src="${user.profilePicture != null ? user.profilePicture : 'https://ui-avatars.com/api/?name=' + user.fullName + '&background=0D8ABC&color=fff&size=200'}" 
+                                     alt="User Avatar" class="profile-avatar">
+                                     
+                                <!-- Thêm hiệu ứng ánh sáng -->
+                                <div class="avatar-glare"></div>
+                                
+                                <!-- Thêm nút chỉnh sửa avatar -->
+                                <a th:href="@{/profile/edit}" class="avatar-edit-btn" title="Edit Profile">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                
+                                <span th:class="'status-badge ' + ${user.status.toString().toLowerCase()}" 
+                                      th:title="${user.status}"></span>
+                            </div>
+                        </div>
+                        <h5 class="profile-name mt-4" th:text="${user.fullName}">John Doe</h5>
+                        <p class="profile-username text-muted mb-1" th:text="'@' + ${user.username}">@johndoe</p>
+                        <div class="profile-status-badge mb-4" th:classappend="${user.status.toString().toLowerCase()}">
+                            <i class="fas fa-circle me-1"></i>
+                            <span th:text="${user.status}">ONLINE</span>
+                        </div>
+                        <div class="profile-actions">
+                            <a th:href="@{/profile/edit}" class="btn btn-primary btn-glow">
+                                <i class="fas fa-edit me-1"></i> Edit Profile
+                            </a>
+                            <a th:href="@{/home}" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card profile-stats-card glass-card mb-4 animate__animated animate__fadeIn animate__delay-1s">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3"><i class="fas fa-chart-bar me-2"></i>Activity Stats</h6>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="stat-item">
+                                    <h6 class="stat-value">253</h6>
+                                    <p class="stat-label"><i class="fas fa-comment-dots me-1"></i>Messages</p>
+                                    <div class="stat-progress">
+                                        <div class="stat-progress-bar" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="stat-item">
+                                    <h6 class="stat-value">12</h6>
+                                    <p class="stat-label"><i class="fas fa-users me-1"></i>Groups</p>
+                                    <div class="stat-progress">
+                                        <div class="stat-progress-bar" style="width: 45%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="stat-item">
+                                    <h6 class="stat-value">35</h6>
+                                    <p class="stat-label"><i class="fas fa-user-friends me-1"></i>Friends</p>
+                                    <div class="stat-progress">
+                                        <div class="stat-progress-bar" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card profile-contact-card glass-card animate__animated animate__fadeIn animate__delay-2s">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-3"><i class="fas fa-address-card me-2"></i>Contact Information</h6>
+                        <ul class="list-group list-group-flush contact-list">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    Email
+                                </div>
+                                <span th:text="${user.email}" class="text-truncate ms-2 contact-value">john.doe@example.com</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    Joined
+                                </div>
+                                <span th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}" class="contact-value">01 Jan 2023</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    Last Login
+                                </div>
+                                <span th:text="${user.lastLoginAt != null ? #temporals.format(user.lastLoginAt, 'dd MMM yyyy HH:mm') : 'N/A'}" class="contact-value">01 Jan 2023 12:30</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-8">
+                <!-- Alert Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show animate__animated animate__fadeInDown" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show animate__animated animate__fadeInDown" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                
+                <!-- About Me Card -->
+                <div class="card profile-about-card glass-card mb-4 animate__animated animate__fadeIn">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-user me-2"></i>About Me</h5>
+                        <div class="about-content">
+                            <p class="card-text" th:text="${user.bio != null && !user.bio.isEmpty() ? user.bio : 'No bio information available. Edit your profile to add a bio.'}">
+                                No bio information available. Edit your profile to add a bio.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity Card -->
+                <div class="card profile-activity-card glass-card mb-4 animate__animated animate__fadeIn animate__delay-1s">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Sent a message to Jane Smith</h6>
+                                    <p class="timeline-text">2 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Added Mike Johnson as a friend</h6>
+                                    <p class="timeline-text">Yesterday</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Joined Tech Team group</h6>
+                                    <p class="timeline-text">3 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Friends Card -->
+                <div class="card profile-friends-card glass-card animate__animated animate__fadeIn animate__delay-2s">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0"><i class="fas fa-user-friends me-2"></i>Friends</h5>
+                            <a href="#" class="view-all-link">View All <i class="fas fa-chevron-right ms-1"></i></a>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4 col-sm-6">
+                                <div class="friend-item">
+                                    <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=4CAF50&color=fff" alt="Jane Smith" class="friend-avatar">
+                                    <div class="friend-info">
+                                        <h6 class="friend-name">Jane Smith</h6>
+                                        <p class="friend-status online"><i class="fas fa-circle me-1"></i>Online</p>
+                                    </div>
+                                    <div class="friend-actions">
+                                        <button class="friend-action-btn" title="Message">
+                                            <i class="fas fa-comment"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <div class="friend-item">
+                                    <img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=9C27B0&color=fff" alt="Mike Johnson" class="friend-avatar">
+                                    <div class="friend-info">
+                                        <h6 class="friend-name">Mike Johnson</h6>
+                                        <p class="friend-status away"><i class="fas fa-circle me-1"></i>Away</p>
+                                    </div>
+                                    <div class="friend-actions">
+                                        <button class="friend-action-btn" title="Message">
+                                            <i class="fas fa-comment"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-6">
+                                <div class="friend-item">
+                                    <img src="https://ui-avatars.com/api/?name=Sarah+Williams&background=2196F3&color=fff" alt="Sarah Williams" class="friend-avatar">
+                                    <div class="friend-info">
+                                        <h6 class="friend-name">Sarah Williams</h6>
+                                        <p class="friend-status offline"><i class="fas fa-circle me-1"></i>Offline</p>
+                                    </div>
+                                    <div class="friend-actions">
+                                        <button class="friend-action-btn" title="Message">
+                                            <i class="fas fa-comment"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <!-- Custom JS -->
+    <!-- <script th:src="@{/js/script.js}"></script> -->
+    <script th:src="@{/js/profile.js}"></script>
+    <script>
+        // Thêm hiệu ứng cho avatar khi trang tải
+        document.addEventListener('DOMContentLoaded', function() {
+            enhanceProfileAvatar();
+        });
+        
+        function enhanceProfileAvatar() {
+            const avatarContainer = document.querySelector('.profile-avatar-container');
+            if (!avatarContainer) return;
+            
+            // Thêm hiệu ứng xuất hiện
+            const avatar = avatarContainer.querySelector('.profile-avatar');
+            if (avatar) {
+                avatar.style.opacity = '0';
+                avatar.style.transform = 'scale(0.8)';
+                
+                setTimeout(() => {
+                    avatar.style.opacity = '1';
+                    avatar.style.transform = 'scale(1)';
+                }, 300);
+            }
+            
+            // Thêm hiệu ứng 3D tilt khi di chuột
+            avatarContainer.addEventListener('mousemove', function(e) {
+                const avatar = this.querySelector('.profile-avatar');
+                if (!avatar) return;
+                
+                // Tính toán vị trí chuột tương đối
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                // Giới hạn góc nghiêng
+                const maxDegree = 10;
+                const xDeg = (y / (rect.height / 2)) * maxDegree;
+                const yDeg = (x / (rect.width / 2)) * maxDegree * -1;
+                
+                // Áp dụng hiệu ứng 3D
+                avatar.style.transform = `perspective(1000px) rotateX(${xDeg}deg) rotateY(${yDeg}deg) scale(1.05)`;
+                
+                // Hiệu ứng ánh sáng
+                const glare = this.querySelector('.avatar-glare');
+                if (glare) {
+                    const glareX = (e.clientX - rect.left) / rect.width * 100;
+                    const glareY = (e.clientY - rect.top) / rect.height * 100;
+                    glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%)`;
+                    glare.style.opacity = '1';
+                }
+            });
+            
+            // Reset khi di chuột ra khỏi
+            avatarContainer.addEventListener('mouseleave', function() {
+                const avatar = this.querySelector('.profile-avatar');
+                if (avatar) {
+                    avatar.style.transform = '';
+                }
+                
+                const glare = this.querySelector('.avatar-glare');
+                if (glare) {
+                    glare.style.opacity = '0';
+                }
+            });
+        }
+        
+        // Khởi tạo particles.js với cấu hình tối ưu
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof particlesJS !== "undefined") {
+                particlesJS("particles-js", {
+                    particles: {
+                        number: {
+                            value: 40,
+                            density: {
+                                enable: true,
+                                value_area: 800,
+                            },
+                        },
+                        color: {
+                            value: "#00e5ff",
+                        },
+                        shape: {
+                            type: "circle",
+                            stroke: {
+                                width: 0,
+                                color: "#000000",
+                            },
+                        },
+                        opacity: {
+                            value: 0.3,
+                            random: true,
+                            anim: {
+                                enable: true,
+                                speed: 0.8,
+                                opacity_min: 0.1,
+                                sync: false,
+                            },
+                        },
+                        size: {
+                            value: 3,
+                            random: true,
+                            anim: {
+                                enable: true,
+                                speed: 1.5,
+                                size_min: 0.1,
+                                sync: false,
+                            },
+                        },
+                        line_linked: {
+                            enable: true,
+                            distance: 150,
+                            color: "#00bcd4",
+                            opacity: 0.2,
+                            width: 1,
+                        },
+                        move: {
+                            enable: true,
+                            speed: 0.8,
+                            direction: "none",
+                            random: true,
+                            straight: false,
+                            out_mode: "out",
+                            bounce: false,
+                            attract: {
+                                enable: false,
+                                rotateX: 600,
+                                rotateY: 1200,
+                            },
+                        },
+                    },
+                    interactivity: {
+                        detect_on: "canvas",
+                        events: {
+                            onhover: {
+                                enable: true,
+                                mode: "grab",
+                            },
+                            onclick: {
+                                enable: true,
+                                mode: "push",
+                            },
+                            resize: true,
+                        },
+                        modes: {
+                            grab: {
+                                distance: 140,
+                                line_linked: {
+                                    opacity: 0.5,
+                                },
+                            },
+                            push: {
+                                particles_nb: 2,
+                            },
+                        },
+                    },
+                    retina_detect: true,
+                });
+            }
+            
+            // Auto-dismiss alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach((alert) => {
+                setTimeout(() => {
+                    // Add fade out animation
+                    alert.classList.add('animate__fadeOut');
+
+                    // Remove after animation completes
+                    setTimeout(() => {
+                        if (typeof bootstrap !== "undefined" && bootstrap.Alert) {
+                            const bsAlert = new bootstrap.Alert(alert);
+                            bsAlert.close();
+                        } else {
+                            alert.style.display = "none";
+                        }
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

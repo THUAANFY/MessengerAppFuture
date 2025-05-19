@@ -3,6 +3,7 @@ package messenger.messenger.Controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import jakarta.servlet.http.HttpSession;
 import messenger.messenger.Models.User;
@@ -23,6 +24,11 @@ public class HomeController {
         model.addAttribute("user", user);
         
         // Return the home view (this will use your home.html template)
-        return "home";
+        return "index";
+    }
+    @PostMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
     }
 }

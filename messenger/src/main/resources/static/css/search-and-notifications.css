@@ -1,0 +1,121 @@
+/* Search Results Styling - Cập nhật */
+.search-container {
+    position: relative; /* Đảm bảo container cha có position relative */
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1a1a2e;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Tăng shadow để dễ nhìn hơn */
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000; /* Đảm bảo hiển thị trên các phần tử khác */
+    margin-top: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Thêm viền để dễ nhìn */
+}
+
+/* Thêm animation để dễ nhận biết */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.search-results {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Tăng độ sáng khi hover */
+}
+
+.search-user-avatar {
+    position: relative;
+    margin-right: 10px;
+}
+
+.search-user-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2); /* Thêm viền cho avatar */
+}
+
+.search-user-info {
+    flex: 1;
+}
+
+.search-user-name {
+    font-weight: 500;
+    color: #fff;
+}
+
+.search-user-username {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-add-friend-btn {
+    background-color: #0d8abc;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.search-add-friend-btn:hover {
+    background-color: #0a6d91;
+    transform: scale(1.1); /* Hiệu ứng phóng to khi hover */
+}
+
+.search-add-friend-btn.sent {
+    background-color: #4CAF50;
+}
+
+.search-no-results, .search-loading {
+    padding: 15px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.search-loading {
+    font-style: italic;
+}
+
+/* Thêm hiệu ứng loading */
+.search-loading:after {
+    content: '...';
+    animation: dots 1.5s infinite;
+    display: inline-block;
+    width: 20px;
+    text-align: left;
+}
+
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}

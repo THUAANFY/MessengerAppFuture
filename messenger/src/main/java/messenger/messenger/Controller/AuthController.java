@@ -29,9 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@Valid @ModelAttribute("user") RegisterDTO registerDTO, 
-                          BindingResult bindingResult, 
-                          Model model) {
+    public String register(@Valid @ModelAttribute("user") RegisterDTO registerDTO, BindingResult bindingResult, Model model) {
         // Kiểm tra lỗi validation
         if (bindingResult.hasErrors()) {
             return "auth/register";
@@ -86,9 +84,9 @@ public class AuthController {
         return "auth/login";
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/login";
-    }
+    // @GetMapping("/logout")
+    // public String logout(HttpSession session) {
+    //     session.invalidate();
+    //     return "redirect:/login";
+    // }
 }

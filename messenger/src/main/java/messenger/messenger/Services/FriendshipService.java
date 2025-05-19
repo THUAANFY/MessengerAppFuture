@@ -97,4 +97,9 @@ public class FriendshipService {
         Friendship friendship = friendshipDAO.findFriendship(user1, user2);
         return friendship != null && friendship.getStatus() == Friendship.Status.ACCEPTED;
     }
+
+    public Friendship getFriendshipById(Long id) {
+        return friendshipDAO.findById(id).orElse(null);
+    }
+
 }

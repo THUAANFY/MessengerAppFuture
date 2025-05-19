@@ -13,6 +13,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <link rel="stylesheet" th:href="@{/css/search-and-notifications.css}">
 </head>
 <body class="chat-body">
     <!-- Particle Background (reduced opacity) -->
@@ -24,14 +25,17 @@
             <!-- User Profile -->
             <div class="user-profile">
                 <div class="user-avatar">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff" alt="User Avatar">
+                    <img th:src="${user.profilePicture != null ? user.profilePicture : 'https://ui-avatars.com/api/?name=' + (user != null ? user.fullName : 'John+Doe') + '&background=0D8ABC&color=fff'}" alt="User Avatar">
                     <span class="status-indicator online"></span>
                 </div>
                 <div class="user-info">
                     <h6 class="user-name" th:text="${user != null ? user.fullName : 'John Doe'}">John Doe</h6>
-                    <p class="user-status">Online</p>
+                    <p class="user-status" th:text="${user != null ? user.status : 'Online'}">Online</p>
                 </div>
                 <div class="user-actions">
+                    <a th:href="@{/profile}" class="action-btn" title="Profile">
+                        <i class="fas fa-user"></i>
+                    </a>
                     <button class="action-btn" id="settingsBtn" title="Settings">
                         <i class="fas fa-cog"></i>
                     </button>
@@ -561,5 +565,7 @@
     <!-- Custom JS -->
     <script th:src="@{/js/script.js}"></script>
     <script th:src="@{/js/chat.js}"></script>
+    <script th:src="@{/js/search.js}"></script>
+    <script th:src="@{/js/notifications.js}"></script>
 </body>
 </html>

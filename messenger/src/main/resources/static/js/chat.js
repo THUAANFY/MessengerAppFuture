@@ -385,3 +385,267 @@ function escapeHtml(unsafe) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;")
 }
+
+// Thêm hàm mới vào file chat.js
+function openConversation(user) {
+    // Cập nhật UI để hiển thị cuộc trò chuyện đã chọn
+    const conversationItems = document.querySelectorAll('.conversation-item');
+    conversationItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.userId == user.id) {
+            item.classList.add('active');
+        }
+    });
+    
+    // Cập nhật header của cuộc trò chuyện
+    const chatHeader = document.querySelector('.chat-header-user');
+    if (chatHeader) {
+        chatHeader.innerHTML = `
+            <div class="conversation-avatar">
+                <img src="${user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=0D8ABC&color=fff`}" alt="${user.fullName}">
+                <span class="status-indicator ${user.status ? user.status.toLowerCase() : 'offline'}"></span>
+            </div>
+            <div class="conversation-info">
+                <div class="conversation-name">${user.fullName}</div>
+                <div class="conversation-status">${user.status ? user.status : 'Offline'}</div>
+            </div>
+        `;
+    }
+    
+    // Xóa tin nhắn cũ và hiển thị cuộc trò chuyện mới
+    const chatMessages = document.querySelector('.chat-messages');
+    if (chatMessages) {
+        chatMessages.innerHTML = `
+            <div class="message-date-divider">
+                <span>Today</span>
+            </div>
+            <div class="chat-start-message">
+                <p>This is the beginning of your conversation with ${user.fullName}</p>
+                <p>Say hello! 👋</p>
+            </div>
+        `;
+    }
+    
+    // Lưu ID người dùng hiện tại đang trò chuyện
+    document.body.dataset.currentChatUserId = user.id;
+    
+    // Tải tin nhắn cũ nếu có
+    loadMessages(user.id);
+    
+    // Trên mobile, đóng sidebar sau khi chọn cuộc trò chuyện
+    if (window.innerWidth < 768) {
+        const chatSidebar = document.querySelector('.chat-sidebar');
+        if (chatSidebar) {
+            chatSidebar.classList.remove('active');
+        }
+    }
+}
+
+// Thêm hàm tải tin nhắn
+function loadMessages(userId) {
+    // Gọi API để lấy tin nhắn
+    fetch(`/messages/${userId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load messages');
+            }
+            return response.json();
+        })
+        .then(messages => {
+            displayMessages(messages);
+        })
+        .catch(error => {
+            console.error('Error loading messages:', error);
+        });
+}
+
+// Hiển thị tin nhắn
+function displayMessages(messages) {
+    const chatMessages = document.querySelector('.chat-messages');
+    if (!chatMessages || !messages || messages.length === 0) return;
+    
+    // Xóa tin nhắn "beginning of conversation" nếu có tin nhắn
+    const startMessage = chatMessages.querySelector('.chat-start-message');
+    if (startMessage) {
+        chatMessages.removeChild(startMessage);
+    }
+    
+    // Hiển thị từng tin nhắn
+    messages.forEach(message => {
+        const isSent = message.senderId === getCurrentUserId();
+        const messageElement = createMessageElement(message, isSent);
+        chatMessages.appendChild(messageElement);
+    });
+    
+    // Cuộn xuống tin nhắn mới nhất
+    scrollToBottom();
+}
+
+// Tạo phần tử tin nhắn
+function createMessageElement(message, isSent) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message-item ${isSent ? 'sent' : 'received'}`;
+    
+    if (!isSent) {
+        // Nếu là tin nhắn nhận, thêm avatar
+        messageElement.innerHTML = `
+            <div class="message-avatar">
+                <img src="${message.senderAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(message.senderName)}&background=4CAF50&color=fff`}" alt="${message.senderName}">
+            </div>
+        `;
+    }
+    
+    // Thêm nội dung tin nhắn
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    
+    contentDiv.innerHTML = `
+        <div class="message-bubble">
+            <p>${escapeHtml(message.content)}</p>
+        </div>
+        <div class="message-info">
+            <span class="message-time">${formatMessageTime(message.createdAt)}</span>
+            ${isSent ? '<span class="message-status"><i class="fas fa-check-double"></i></span>' : ''}
+        </div>
+    `;
+    
+    messageElement.appendChild(contentDiv);
+    return messageElement;
+}
+
+// Cập nhật hàm sendMessage để gửi tin nhắn đến người dùng hiện tại
+function sendMessage() {
+    const messageInput = document.querySelector('.message-input');
+    const chatMessages = document.querySelector('.chat-messages');
+    const currentChatUserId = document.body.dataset.currentChatUserId;
+    
+    if (!currentChatUserId) {
+        console.error('No chat user selected');
+        return;
+    }
+    
+    if (messageInput.value.trim() !== "") {
+        const message = messageInput.value;
+        messageInput.value = "";
+        
+        // Hiển thị tin nhắn ngay lập tức (optimistic UI)
+        const now = new Date();
+        const timeString = formatMessageTime(now);
+        
+        // Xóa tin nhắn "beginning of conversation" nếu có
+        const startMessage = chatMessages.querySelector('.chat-start-message');
+        if (startMessage) {
+            chatMessages.removeChild(startMessage);
+        }
+        
+        // Tạo phần tử tin nhắn
+        const messageElement = document.createElement('div');
+        messageElement.className = "message-item sent animate__animated animate__fadeInUp";
+        messageElement.innerHTML = `
+            <div class="message-content">
+                <div class="message-bubble">
+                    <p>${escapeHtml(message)}</p>
+                </div>
+                <div class="message-info">
+                    <span class="message-time">${timeString}</span>
+                    <span class="message-status">
+                        <i class="fas fa-check"></i>
+                    </span>
+                </div>
+            </div>
+        `;
+        
+        // Thêm tin nhắn vào chat
+        chatMessages.appendChild(messageElement);
+        
+        // Cuộn xuống dưới
+        scrollToBottom();
+        
+        // Gửi tin nhắn đến server
+        fetch('/messages/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                receiverId: currentChatUserId,
+                content: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Cập nhật trạng thái đã gửi
+                const statusIcon = messageElement.querySelector('.message-status i');
+                if (statusIcon) {
+                    statusIcon.className = 'fas fa-check-double';
+                }
+                
+                // Cập nhật tin nhắn cuối cùng trong danh sách trò chuyện
+                updateLastMessage(currentChatUserId, message);
+            } else {
+                console.error('Failed to send message:', data.message);
+                // Hiển thị lỗi gửi tin nhắn
+                const statusIcon = messageElement.querySelector('.message-status i');
+                if (statusIcon) {
+                    statusIcon.className = 'fas fa-exclamation-circle';
+                    statusIcon.style.color = '#ff5252';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error sending message:', error);
+            // Hiển thị lỗi gửi tin nhắn
+            const statusIcon = messageElement.querySelector('.message-status i');
+            if (statusIcon) {
+                statusIcon.className = 'fas fa-exclamation-circle';
+                statusIcon.style.color = '#ff5252';
+            }
+        });
+    }
+}
+
+// Cập nhật tin nhắn cuối cùng trong danh sách trò chuyện
+function updateLastMessage(userId, message) {
+    const conversationItem = document.querySelector(`.conversation-item[data-user-id="${userId}"]`);
+    if (conversationItem) {
+        const lastMessageElement = conversationItem.querySelector('.conversation-last-message');
+        if (lastMessageElement) {
+            // Giới hạn độ dài tin nhắn hiển thị
+            const maxLength = 30;
+            const displayMessage = message.length > maxLength ? 
+                message.substring(0, maxLength) + '...' : message;
+            lastMessageElement.textContent = displayMessage;
+        }
+        
+        // Cập nhật thời gian
+        const timeElement = conversationItem.querySelector('.conversation-time');
+        if (timeElement) {
+            const now = new Date();
+            timeElement.textContent = formatMessageTime(now);
+        }
+        
+        // Di chuyển cuộc trò chuyện này lên đầu danh sách
+        const conversationList = document.querySelector('.conversation-list');
+        if (conversationList && conversationList.firstChild !== conversationItem) {
+            conversationList.insertBefore(conversationItem, conversationList.firstChild);
+        }
+    }
+}
+
+// Hàm định dạng thời gian tin nhắn
+function formatMessageTime(dateTime) {
+    const date = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    return `${formattedHours}:${formattedMinutes} ${ampm}`;
+}
+
+// Lấy ID người dùng hiện tại
+function getCurrentUserId() {
+    const userElement = document.querySelector('.user-profile');
+    return userElement ? userElement.dataset.userId : null;
+}

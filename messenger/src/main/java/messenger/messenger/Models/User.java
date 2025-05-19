@@ -28,6 +28,9 @@ public class User {
 
     @Column(length = 255)
     private String profilePicture;
+    
+    @Column(length = 500)
+    private String bio;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
@@ -42,4 +45,7 @@ public class User {
     public enum Status {
         ONLINE, OFFLINE, BUSY
     }
+    
+    @Column
+    private LocalDateTime lastLoginAt;
 }
